@@ -837,4 +837,24 @@ mod tests {
 		.to_vec();
 		assert_eq!(encoded, expected);
 	}
+
+	#[test]
+	fn encode_abiv2_arrays() {
+		let token = {
+			use crate::Token::*;
+			vec![Tuple(vec![FixedArray(vec![Uint(1.into()), Uint(2.into())])]), Array(vec![Uint(5.into())])]
+		};
+		let encoded = encode(&token);
+		let expected = hex!(
+			"
+            0000000000000000000000000000000000000000000000000000000000000001
+            0000000000000000000000000000000000000000000000000000000000000002
+            0000000000000000000000000000000000000000000000000000000000000060
+            0000000000000000000000000000000000000000000000000000000000000001
+            0000000000000000000000000000000000000000000000000000000000000005
+        "
+		)
+		.to_vec();
+		assert_eq!(encoded, expected);
+	}
 }

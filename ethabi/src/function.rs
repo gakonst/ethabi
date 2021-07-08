@@ -90,7 +90,7 @@ impl Function {
 
 #[cfg(test)]
 mod tests {
-	use crate::{Function, Param, ParamType, StateMutability, Token};
+	use crate::{Function, Param, ParamType, StateMutability, Token, Uint};
 	use hex_literal::hex;
 
 	#[test]
@@ -111,6 +111,38 @@ mod tests {
 		uint[31] = 69;
 		let encoded = func.encode_input(&[Token::Uint(uint.into()), Token::Bool(true)]).unwrap();
 		let expected = hex!("cdcd77c000000000000000000000000000000000000000000000000000000000000000450000000000000000000000000000000000000000000000000000000000000001").to_vec();
+		assert_eq!(encoded, expected);
+	}
+
+	#[test]
+	fn encode_abiv2_arrays() {
+		#[allow(deprecated)]
+		let func = Function {
+			name: "myVerify".to_owned(),
+			inputs: vec![
+				Param {
+					name: "".to_owned(),
+					kind: ParamType::Tuple(vec![ParamType::FixedArray(Box::new(ParamType::Uint(256)), 2)]),
+				},
+				Param {
+					name: "".to_owned(),
+					kind: ParamType::Array(Box::new(ParamType::Uint(256))),
+				},
+			],
+			constant: false,
+			outputs: vec![],
+			state_mutability: StateMutability::Payable,
+		};
+
+        use crate::Token::*;
+		let encoded = func.encode_input(
+            &[
+                Tuple(vec![FixedArray(vec![Uint(1.into()), Uint(2.into())])]),
+                Array(vec![Uint(5.into())])
+            ]
+        ).unwrap();
+
+		let expected = hex!("d5f35cac00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000005").to_vec();
 		assert_eq!(encoded, expected);
 	}
 }
